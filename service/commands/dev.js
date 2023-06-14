@@ -22,7 +22,7 @@ info('Starting development server...')
 
 const compiler = webpack(devWebpackConfig)
 const server = new WebpackDevServer(devServerOptions, compiler)
-
+const logHost = host === '0.0.0.0' ? 'localhost' : host
 compiler.hooks.done.tap('serve', (stats) => {
   if (stats.hasErrors()) {
     return
@@ -30,7 +30,7 @@ compiler.hooks.done.tap('serve', (stats) => {
   console.log()
   console.log()
   console.log(`App running at:`)
-  console.log(`  - Local:   ${chalk.cyan(`${protocol}://${host}:${port}`)}`)
+  console.log(`  - Local:   ${chalk.cyan(`${protocol}://${logHost}:${port}`)}`)
   console.log(`  - Network: ${chalk.cyan(`${protocol}://${getLocalIP()}:${port}`)}`)
   console.log()
 })
