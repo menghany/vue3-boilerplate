@@ -4,7 +4,7 @@ const loadEnv = require('../utils/loadEnv')
 loadEnv()
 loadEnv('production')
 
-const rm = require('rimraf')
+const { rimrafSync } = require('rimraf')
 const webpack = require('webpack')
 
 const { error, done } = require('../utils/logger')
@@ -16,29 +16,29 @@ const config = require('../project.config')
 
 logWithSpinner('Building for production...')
 
-rm(paths.resolve(config.outputDir), (err) => {
+const isSuccess = rimrafSync(paths.resolve(config.outputDir))
+if (!isSuccess) {
+  throw new Error('delete fail')
+}
+webpack(webpackConfig, (err, stats) => {
+  stopSpinner(false)
+
   if (err) throw err
 
-  webpack(webpackConfig, (err, stats) => {
-    stopSpinner(false)
+  process.stdout.write(
+    stats.toString({
+      colors: true,
+      modules: false,
+      children: false,
+      chunks: false,
+      chunkModules: false,
+    }) + '\n\n'
+  )
 
-    if (err) throw err
+  if (stats.hasErrors()) {
+    error('Build failed with errors.\n')
+    process.exit(1)
+  }
 
-    process.stdout.write(
-      stats.toString({
-        colors: true,
-        modules: false,
-        children: false,
-        chunks: false,
-        chunkModules: false,
-      }) + '\n\n'
-    )
-
-    if (stats.hasErrors()) {
-      error('Build failed with errors.\n')
-      process.exit(1)
-    }
-
-    done('Build complete.\n')
-  })
+  done('Build complete.\n')
 })
